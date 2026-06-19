@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="calculator.css">
   
-  <!-- AdSense Auto ads – single script for all pages -->
+  <!-- AdSense Auto ads -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5783997886626637" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -32,8 +32,7 @@
 
   <div class="container py-2">
     <div class="breadcrumb">
-      <a href="../index.html">Home</a> <span class="breadcrumb-separator">/</span>
-      <a href="../index.html#categories">Calculators</a> <span class="breadcrumb-separator">/</span>
+      <a href="index.html">Home</a> <span class="breadcrumb-separator">/</span>
       <span>Compound Interest</span>
     </div>
   </div>
@@ -44,23 +43,23 @@
       <p>Calculate how your investment grows through the power of compound interest</p>
     </div>
 
-    <form class="calculator-form" onsubmit="calculateCompound(event)">
+    <form class="calculator-form" onsubmit="return false;">
       <div class="form-row">
         <div class="form-group">
           <label for="principal">Principal Amount (₹)</label>
-          <input type="number" id="principal" placeholder="Initial investment" min="0" step="1000" required>
+          <input type="number" id="principal" placeholder="Initial investment" min="0" step="1000" value="100000" required>
           <div class="form-error"></div>
         </div>
         <div class="form-group">
           <label for="rate">Annual Rate of Return (%)</label>
-          <input type="number" id="rate" placeholder="Interest rate" min="0" max="100" step="0.01" required>
+          <input type="number" id="rate" placeholder="Interest rate" min="0" max="100" step="0.01" value="8" required>
           <div class="form-error"></div>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label for="time">Investment Period (Years)</label>
-          <input type="number" id="time" placeholder="Years" min="1" max="50" step="1" required>
+          <input type="number" id="time" placeholder="Years" min="1" max="50" step="1" value="10" required>
           <div class="form-error"></div>
         </div>
         <div class="form-group">
@@ -103,13 +102,13 @@
           <h4>Input</h4>
           <div class="example-item"><span class="example-label">Principal</span><span class="example-value">₹ 1,00,000</span></div>
           <div class="example-item"><span class="example-label">Rate</span><span class="example-value">8% p.a.</span></div>
-          <div class="example-item"><span class="example-label">Period</span><span class="example-value">10 Years</span></div>
+          <div class="example-item"><span class="example-label">Period</span><span class="example-value">10 Years (Monthly Compounding)</span></div>
         </div>
         <div class="example-outputs">
           <h4>Output</h4>
-          <div class="example-item"><span class="example-label">Final Amount</span><span class="example-value">₹ 2,15,892</span></div>
-          <div class="example-item"><span class="example-label">Interest</span><span class="example-value">₹ 1,15,892</span></div>
-          <div class="example-item"><span class="example-label">Return</span><span class="example-value">115.89%</span></div>
+          <div class="example-item"><span class="example-label">Final Amount</span><span class="example-value">₹ 2,21,964</span></div>
+          <div class="example-item"><span class="example-label">Interest Earned</span><span class="example-value">₹ 1,21,964</span></div>
+          <div class="example-item"><span class="example-label">Total Return</span><span class="example-value">121.96%</span></div>
         </div>
       </div>
     </div>
@@ -172,24 +171,60 @@
   </footer>
   <button class="back-to-top">↑</button>
 
+  <!-- Only necessary scripts; we'll replace the calculation inline -->
   <script src="main.js"></script>
-  <script src="calculators.js"></script>
   <script src="faq.js"></script>
   <script src="share.js"></script>
+  <!-- DO NOT include calculators.js if it overrides calculations; we'll do everything ourselves -->
+
   <script>
+    // Accurate compound interest calculation
+    function calculateCompoundInterest(principal, annualRate, years, compoundsPerYear) {
+      const rate = annualRate / 100;
+      const amount = principal * Math.pow(1 + rate / compoundsPerYear, compoundsPerYear * years);
+      const interest = amount - principal;
+      return {
+        amount: amount,
+        interest: interest
+      };
+    }
+
+    // Indian number formatting (e.g., 2,21,964)
+    function formatIndianCurrency(num) {
+      // Convert to fixed 0 decimal places, but keep as integer
+      const intNum = Math.round(num);
+      const str = intNum.toString();
+      const lastThree = str.substring(str.length - 3);
+      const otherNumbers = str.substring(0, str.length - 3);
+      if (otherNumbers !== '') {
+        // Format the other numbers in groups of two
+        const formattedOther = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+        return '₹ ' + formattedOther + ',' + lastThree;
+      }
+      return '₹ ' + lastThree;
+    }
+
     function performCompoundCalculation() {
-      const inputs = document.querySelectorAll('input[type="number"]');
-      if (!SmartRate.validateForm(inputs)) return;
       const principal = parseFloat(document.getElementById('principal').value);
       const rate = parseFloat(document.getElementById('rate').value);
       const time = parseFloat(document.getElementById('time').value);
       const frequency = parseInt(document.getElementById('frequency').value);
-      const result = Calculators.calculateCompoundInterest(principal, rate, time, frequency);
-      document.getElementById('result-amount').textContent = SmartRate.formatCurrency(result.amount);
-      document.getElementById('result-interest').textContent = SmartRate.formatCurrency(result.interest);
+
+      if (isNaN(principal) || isNaN(rate) || isNaN(time) || isNaN(frequency)) {
+        alert('Please fill all fields with valid numbers.');
+        return;
+      }
+
+      const result = calculateCompoundInterest(principal, rate, time, frequency);
       const returnPercent = ((result.interest / principal) * 100).toFixed(2);
+
+      document.getElementById('result-amount').textContent = formatIndianCurrency(result.amount);
+      document.getElementById('result-interest').textContent = formatIndianCurrency(result.interest);
       document.getElementById('result-return').textContent = returnPercent + '%';
-      SmartRate.showResults(document.querySelector('.calculator-results'));
+
+      // Show results section if hidden
+      const resultsDiv = document.querySelector('.calculator-results');
+      if (resultsDiv) resultsDiv.style.display = 'block';
     }
   </script>
 </body>
