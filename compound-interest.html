@@ -176,28 +176,8 @@
   <script src="faq.js"></script>
   <script src="share.js"></script>
 
-  <!-- Inline calculator logic with proper Indian formatting -->
+  <!-- Compound interest logic – uses SmartRate.formatCurrency from main.js -->
   <script>
-    function formatIndianCurrency(num) {
-      const intNum = Math.round(num);
-      let str = intNum.toString();
-      if (str.length <= 3) return '₹ ' + str;
-      const lastThree = str.substring(str.length - 3);
-      let other = str.substring(0, str.length - 3);
-      // Insert commas every two digits from right to left in the "other" part
-      let formattedOther = '';
-      let count = 0;
-      for (let i = other.length - 1; i >= 0; i--) {
-        formattedOther = other[i] + formattedOther;
-        count++;
-        if (count === 2 && i !== 0) {
-          formattedOther = ',' + formattedOther;
-          count = 0;
-        }
-      }
-      return '₹ ' + formattedOther + ',' + lastThree;
-    }
-
     function calculateCompoundInterest(principal, annualRate, years, compoundsPerYear) {
       const rate = annualRate / 100;
       const amount = principal * Math.pow(1 + rate / compoundsPerYear, compoundsPerYear * years);
@@ -219,8 +199,9 @@
       const result = calculateCompoundInterest(principal, rate, time, frequency);
       const returnPercent = ((result.interest / principal) * 100).toFixed(2);
 
-      document.getElementById('result-amount').textContent = formatIndianCurrency(result.amount);
-      document.getElementById('result-interest').textContent = formatIndianCurrency(result.interest);
+      // Use the built-in SmartRate formatter (Indian grouping) + ₹ symbol
+      document.getElementById('result-amount').textContent = '₹ ' + SmartRate.formatCurrency(result.amount);
+      document.getElementById('result-interest').textContent = '₹ ' + SmartRate.formatCurrency(result.interest);
       document.getElementById('result-return').textContent = returnPercent + '%';
 
       const resultsDiv = document.querySelector('.calculator-results');
