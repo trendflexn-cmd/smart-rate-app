@@ -171,37 +171,38 @@
   </footer>
   <button class="back-to-top">↑</button>
 
-  <!-- Only necessary scripts; we'll replace the calculation inline -->
+  <!-- Core scripts -->
   <script src="main.js"></script>
   <script src="faq.js"></script>
   <script src="share.js"></script>
-  <!-- DO NOT include calculators.js if it overrides calculations; we'll do everything ourselves -->
 
+  <!-- Inline calculator logic with proper Indian formatting -->
   <script>
-    // Accurate compound interest calculation
+    function formatIndianCurrency(num) {
+      const intNum = Math.round(num);
+      let str = intNum.toString();
+      if (str.length <= 3) return '₹ ' + str;
+      const lastThree = str.substring(str.length - 3);
+      let other = str.substring(0, str.length - 3);
+      // Insert commas every two digits from right to left in the "other" part
+      let formattedOther = '';
+      let count = 0;
+      for (let i = other.length - 1; i >= 0; i--) {
+        formattedOther = other[i] + formattedOther;
+        count++;
+        if (count === 2 && i !== 0) {
+          formattedOther = ',' + formattedOther;
+          count = 0;
+        }
+      }
+      return '₹ ' + formattedOther + ',' + lastThree;
+    }
+
     function calculateCompoundInterest(principal, annualRate, years, compoundsPerYear) {
       const rate = annualRate / 100;
       const amount = principal * Math.pow(1 + rate / compoundsPerYear, compoundsPerYear * years);
       const interest = amount - principal;
-      return {
-        amount: amount,
-        interest: interest
-      };
-    }
-
-    // Indian number formatting (e.g., 2,21,964)
-    function formatIndianCurrency(num) {
-      // Convert to fixed 0 decimal places, but keep as integer
-      const intNum = Math.round(num);
-      const str = intNum.toString();
-      const lastThree = str.substring(str.length - 3);
-      const otherNumbers = str.substring(0, str.length - 3);
-      if (otherNumbers !== '') {
-        // Format the other numbers in groups of two
-        const formattedOther = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
-        return '₹ ' + formattedOther + ',' + lastThree;
-      }
-      return '₹ ' + lastThree;
+      return { amount, interest };
     }
 
     function performCompoundCalculation() {
@@ -222,7 +223,6 @@
       document.getElementById('result-interest').textContent = formatIndianCurrency(result.interest);
       document.getElementById('result-return').textContent = returnPercent + '%';
 
-      // Show results section if hidden
       const resultsDiv = document.querySelector('.calculator-results');
       if (resultsDiv) resultsDiv.style.display = 'block';
     }
