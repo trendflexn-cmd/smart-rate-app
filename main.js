@@ -126,16 +126,24 @@ const observer = new IntersectionObserver((entries) => {
 }, observerOptions);
 
 // Observe cards and sections
-document.addEventListener('DOMContentLoaded', () => {
+function initObserver() {
   document.querySelectorAll('.card, .category-item, .faq-item').forEach(el => {
     observer.observe(el);
   });
-});
+}
+
+document.addEventListener('DOMContentLoaded', initObserver);
 
 // Utility Functions
+function parseNumberInput(value) {
+  // Remove all commas and whitespace, then parse
+  const cleanedValue = String(value).replace(/,/g, '').trim();
+  return parseFloat(cleanedValue) || 0;
+}
+
 function formatCurrency(value) {
-  // Format as number without currency symbol for international use
-  return new Intl.NumberFormat('en-IN', {
+  // Format as number without currency symbol using standard international format
+  return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2
   }).format(value);
@@ -246,5 +254,6 @@ window.SmartRate = {
   clearForm,
   showResults,
   copyToClipboard,
+  parseNumberInput,
   debounce
 };
